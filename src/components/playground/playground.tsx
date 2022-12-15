@@ -1,10 +1,6 @@
 import { useState, useEffect, useMemo, KeyboardEvent } from "react";
 import { IBlock, IPlayground, IPlaygroundProps } from "../../types";
-import {
-  getRandomBlocksOnStart,
-  initPlayground,
-  getNewRandomBlock,
-} from "../../utils";
+import { getRandomBlocksOnStart, initPlayground, getNewRandomBlock } from "../../utils";
 
 export const Playground = ({ size = 4 }: IPlaygroundProps) => {
   const [playground, setPlayground] = useState(initPlayground(size));
@@ -38,7 +34,6 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
 
       const rowValues = updatedValues[rowIndex];
       while (condition(i)) {
-        const currentBlock = rowValues[i];
         if (!row[i].value) {
           i = i + stepDiff;
           j = i - stepDiff;
@@ -49,15 +44,18 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
         }
         row[i].position = row[j + stepDiff].position;
 
-        j = i - stepDiff;
-        while (condition(j)) {
-          console.log(123123);
-          if (currentBlock.value === rowValues[j].value) {
-            rowValues[j].value = currentBlock.value ** 2;
-            currentBlock.value = 0;
+        j = i + stepDiff;
+        if (rowValues[i].value) {
+          while (!rowValues[j].value) {
+            j = j + stepDiff;
           }
-          j = i - stepDiff;
+
+          if (rowValues[i].value === rowValues[j].value) {
+            rowValues[i].value = rowValues[i].value * 2;
+            rowValues[j].value = 0;
+          }
         }
+
         i = i + stepDiff;
         j = i - stepDiff;
       }
@@ -115,10 +113,7 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
               <div key={`row-${rowIndex}`} className="row-container">
                 {row.map((blockData, blockIndex: number) => {
                   return (
-                    <div
-                      key={`block-${blockIndex}`}
-                      className="block-container"
-                    >
+                    <div key={`block-${blockIndex}`} className="block-container">
                       <>
                         {blockData.value && (
                           <div
