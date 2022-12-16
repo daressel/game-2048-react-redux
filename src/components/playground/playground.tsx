@@ -4,6 +4,7 @@ import { getRandomBlocksOnStart, initPlayground, getNewRandomBlock } from '../..
 
 export const Playground = ({ size = 8 }: IPlaygroundProps) => {
   const [playground, setPlayground] = useState(initPlayground(size));
+  const diff = 100 / size;
 
   const verticalMove = (direction: number) => {};
 
@@ -29,9 +30,12 @@ export const Playground = ({ size = 8 }: IPlaygroundProps) => {
         if (!row[j].value) {
           continue;
         }
-        if (i === 0) {
+        if (i === 1) {
           k = -stepDiff;
           while (condition(j + k)) {
+            const potentialBlockPos = `${(j + k) * diff}%`;
+            const currentBlockPos = `${j * diff}%`;
+            console.log(potentialBlockPos, currentBlockPos);
             k -= stepDiff;
           }
 
