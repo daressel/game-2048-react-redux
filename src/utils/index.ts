@@ -1,4 +1,4 @@
-import { IPlayground } from './../types/index';
+import { IBlock, IPlayground } from './../types/index';
 export const getRandomBlocksOnStart = (max: number, size: number): number[][] => {
   const result: number[][] = [];
   for (let i = 0; i < size; i++) {
@@ -18,31 +18,40 @@ export const getRandomBlocksOnStart = (max: number, size: number): number[][] =>
   return result;
 };
 
-export const getNewRandomBlock = (data: number[][]): { position: number[]; value: number } => {
-  const size = data.length;
+export const getBlock = (top: string, left: string, value: number): IBlock => {
+  const block: IBlock = { value, position: { left, top } };
 
-  return {
-    position: [],
-    value: 123,
-  };
+  return block;
+};
+
+export const getNewRandomBlock = (data: IPlayground, size: number): void => {
+  const diff = 100 / size;
+
+  let randomRow = Math.floor(Math.random() * size);
+  let randomCol = Math.floor(Math.random() * size);
+
+  while (
+    data.some((row, rowIndex) =>
+      row.some(
+        (block, blockIndex) => randomRow === rowIndex && randomCol === blockIndex && block.value
+      )
+    )
+  ) {
+    randomRow = Math.floor(Math.random() * size);
+    randomCol = Math.floor(Math.random() * size);
+  }
+
+  data[randomRow][randomCol] = getBlock(`${randomRow * diff}%`, `${randomCol * diff}%`, 2);
 };
 
 export const initPlayground = (size: number): IPlayground => {
   const arr = Array.from(Array(size));
-  const randomBlocks = getRandomBlocksOnStart(size, Math.floor(size / 2));
+  const randomBlocks = getRandomBlocksOnStart(size, Math.floor(30));
   const diff = 100 / size;
   arr.forEach((el, rowIndex) => {
     arr[rowIndex] = Array.from(Array(size)).map((block, blockIndex) => {
-      block = {};
       const condition = randomBlocks.some((el) => el[0] === rowIndex && el[1] === blockIndex);
-
-      block.value = condition ? 2 : 0;
-      block.position = {
-        top: `${rowIndex * diff}%`,
-        left: `${blockIndex * diff}%`,
-      };
-
-      return block;
+      return getBlock(`${rowIndex * diff}%`, `${blockIndex * diff}%`, condition ? 2 : 0);
     });
   });
 

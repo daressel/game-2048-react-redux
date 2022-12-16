@@ -2,72 +2,87 @@ import { useState, useEffect, useMemo, KeyboardEvent } from 'react';
 import { IBlock, IPlayground, IPlaygroundProps } from '../../types';
 import { getRandomBlocksOnStart, initPlayground, getNewRandomBlock } from '../../utils';
 
-export const Playground = ({ size = 4 }: IPlaygroundProps) => {
+export const Playground = ({ size = 8 }: IPlaygroundProps) => {
   const [playground, setPlayground] = useState(initPlayground(size));
 
   const verticalMove = (direction: number) => {};
 
   const horizontalAnimation = async (direction: number) => {
     const updatedPlayground = [...playground];
-    const updatedValues = JSON.parse(JSON.stringify(playground)) as IBlock[][];
+    const updatedValues = JSON.parse(JSON.stringify(playground)) as IPlayground;
+
     const stepDiff = direction ? -1 : 1;
-    updatedPlayground.forEach((row, rowIndex) => {
-      let i = direction ? row.length - 1 : 0;
-      let j = i - stepDiff;
+    let i = direction ? size - 1 : 0;
+    let j = 0;
+    let k = 0;
 
-      const condition = (value: number) => {
-        const result = value < row.length && value >= 0;
-        return result;
-      };
+    const condition = (value: number) => {
+      return value < size && value >= 0;
+    };
 
-      const jCondition = (jValue: number) => {
-        const condition =
-          row.filter(
-            (el) =>
-              el.value === row[jValue].value &&
-              el.position.top === row[jValue]?.position.top &&
-              el.position.left === row[jValue]?.position.left
-          ).length < 2;
+    for (i; condition(i); i += stepDiff) {
+      const rowValues = updatedValues[i];
+      const row = updatedPlayground[i];
 
-        return condition;
-      };
-
-      const rowValues = updatedValues[rowIndex];
-      while (condition(i)) {
-        if (!row[i].value) {
-          i = i + stepDiff;
-          j = i - stepDiff;
+      j = direction ? row.length - 1 : 0;
+      for (j; condition(j); j = j + stepDiff) {
+        if (!row[j].value) {
           continue;
         }
-        while (condition(j) && jCondition(j)) {
-          j = j - stepDiff;
-        }
-        row[i].position = row[j + stepDiff].position;
-
-        j = i + stepDiff;
-        if (rowValues[i].value) {
-          while (!rowValues[j].value) {
-            j = j + stepDiff;
+        if (i === 0) {
+          k = -stepDiff;
+          while (condition(j + k)) {
+            k -= stepDiff;
           }
 
-          if (rowValues[i].value === rowValues[j].value) {
-            rowValues[i].value = rowValues[i].value * 2;
-            rowValues[j].value = 0;
-          }
+          console.log('blockpos', j, ' result -> ', j + k);
         }
 
-        i = i + stepDiff;
-        j = i - stepDiff;
+        // k = -stepDiff;
+        // while (condition(j + k)) {
+        //   if (!row[j + k].value && condition(j + k - stepDiff)) {
+        //     console.log(condition(j + k + stepDiff));
+        //     k -= stepDiff;
+
+        //     continue;
+        //   }
+
+        //   if (
+        //     row.filter(
+        //       (block) =>
+        //         block.value === row[j].value && block.position.left === row[j + k].position.left
+        //     ).length < 2
+        //   ) {
+        //     row[j].position.left = row[j + k].position.left;
+        //   }
+        //   k -= stepDiff;
+        // }
       }
-    });
+
+      j = direction ? size - 1 : 0;
+      for (j; condition(j); j = j + stepDiff) {
+        if (!rowValues[j].value) continue;
+
+        k = stepDiff;
+        while (condition(j + k) && !rowValues[j + k].value) {
+          k += stepDiff;
+        }
+
+        if (rowValues[j + k]?.value === rowValues[j].value) {
+          rowValues[j].value = rowValues[j].value << 1;
+          rowValues[j + k].value = 0;
+          j += k;
+        }
+      }
+    }
     setPlayground(updatedPlayground);
 
     await new Promise((res) => {
       setTimeout(() => {
         res(true);
-      }, 200);
+      }, 800);
     });
-
+    // getNewRandomBlock(updatedValues, size);
     setPlayground(updatedValues);
   };
 
@@ -78,7 +93,7 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
     const stepDiff = direction ? -1 : 1;
     updatedPlayground.forEach((row, rowIndex) => {
       let i = direction ? row.length - 1 : 0;
-      let j = i - stepDiff;
+      let k = i - stepDiff;
     });
   };
 
@@ -115,7 +130,7 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
                   return (
                     <div key={`block-${blockIndex}`} className="block-container">
                       <>
-                        {blockData.value && (
+                        {blockData.value ? (
                           <div
                             className="active-block"
                             style={{
@@ -125,7 +140,7 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
                           >
                             {blockData.value}
                           </div>
-                        )}
+                        ) : null}
                       </>
                     </div>
                   );
