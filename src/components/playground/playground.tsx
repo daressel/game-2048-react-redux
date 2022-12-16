@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, KeyboardEvent } from "react";
-import { IBlock, IPlayground, IPlaygroundProps } from "../../types";
-import { getRandomBlocksOnStart, initPlayground, getNewRandomBlock } from "../../utils";
+import { useState, useEffect, useMemo, KeyboardEvent } from 'react';
+import { IBlock, IPlayground, IPlaygroundProps } from '../../types';
+import { getRandomBlocksOnStart, initPlayground, getNewRandomBlock } from '../../utils';
 
 export const Playground = ({ size = 4 }: IPlaygroundProps) => {
   const [playground, setPlayground] = useState(initPlayground(size));

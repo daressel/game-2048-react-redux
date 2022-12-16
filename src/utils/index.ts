@@ -1,23 +1,16 @@
-import { IPlayground } from "./../types/index";
-export const getRandomBlocksOnStart = (
-  max: number,
-  size: number
-): number[][] => {
+import { IPlayground } from './../types/index';
+export const getRandomBlocksOnStart = (max: number, size: number): number[][] => {
   const result: number[][] = [];
   for (let i = 0; i < size; i++) {
     let randRow = Math.floor(Math.random() * max);
     let randBlock = Math.floor(Math.random() * max);
 
-    let invalidCondition = result.some(
-      (el) => el[0] === randRow && el[1] === randBlock
-    );
+    let invalidCondition = result.some((el) => el[0] === randRow && el[1] === randBlock);
 
     while (invalidCondition) {
       randRow = Math.floor(Math.random() * max);
       randBlock = Math.floor(Math.random() * max);
-      invalidCondition = result.some(
-        (el) => el[0] === randRow && el[1] === randBlock
-      );
+      invalidCondition = result.some((el) => el[0] === randRow && el[1] === randBlock);
     }
 
     result.push([randRow, randBlock]);
@@ -25,9 +18,7 @@ export const getRandomBlocksOnStart = (
   return result;
 };
 
-export const getNewRandomBlock = (
-  data: number[][]
-): { position: number[]; value: number } => {
+export const getNewRandomBlock = (data: number[][]): { position: number[]; value: number } => {
   const size = data.length;
 
   return {
@@ -43,9 +34,7 @@ export const initPlayground = (size: number): IPlayground => {
   arr.forEach((el, rowIndex) => {
     arr[rowIndex] = Array.from(Array(size)).map((block, blockIndex) => {
       block = {};
-      const condition = randomBlocks.some(
-        (el) => el[0] === rowIndex && el[1] === blockIndex
-      );
+      const condition = randomBlocks.some((el) => el[0] === rowIndex && el[1] === blockIndex);
 
       block.value = condition ? 2 : 0;
       block.position = {
