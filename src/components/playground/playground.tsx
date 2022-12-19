@@ -85,7 +85,7 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
       }
     });
 
-    const needAdd = (): boolean => {
+    const blocked = (): boolean => {
       const updated = copyPlayground.reduce(
         (acc, el) => acc + el.position.left + el.position.top + el.value,
         0
@@ -94,10 +94,14 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
         (acc, el) => acc + el.position.left + el.position.top + el.value,
         0
       );
-      return updated !== old;
+      return updated === old;
     };
-    needAdd() && addBlocks({ playground: copyPlayground, count: 1, map });
+    if (blocked()) {
+      setBlocked(true);
+      return;
+    }
 
+    addBlocks({ playground: copyPlayground, count: 1, map });
     setPlayground(copyPlayground.filter((el) => el?.value));
   };
 
