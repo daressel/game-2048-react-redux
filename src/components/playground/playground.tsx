@@ -2,7 +2,7 @@ import { useState, useMemo, KeyboardEvent } from 'react';
 import { IPlayground, IPlaygroundProps, Position, IBlock, IAxisOpt } from '../../types';
 import { initPlayground, initMap, addBlocks } from '../../utils';
 
-export const Playground = ({ size = 10 }: IPlaygroundProps) => {
+export const Playground = ({ size = 4 }: IPlaygroundProps) => {
   const [map, diff, playgroundStyle] = useMemo(() => {
     const map: Position[] = initMap(size, size);
     const diff = 100 / size;
@@ -56,7 +56,7 @@ export const Playground = ({ size = 10 }: IPlaygroundProps) => {
           const block = lineBlocks.find(
             (el) => el.position[axisOpt.block] === trackIndex && el.position[axisOpt.line] === line
           );
-          if (block) {
+          if (block?.value) {
             if (!blocks.length || block.value === blocks[0].value) {
               block.position[axisOpt.block] = blockIndex;
             }
@@ -84,7 +84,19 @@ export const Playground = ({ size = 10 }: IPlaygroundProps) => {
         second.value = 0;
       }
     });
-    addBlocks({ playground: copyPlayground, count: 1, map });
+
+    const needAdd = (): boolean => {
+      const updated = copyPlayground.reduce(
+        (acc, el) => acc + el.position.left + el.position.top + el.value,
+        0
+      );
+      const old = playground.reduce(
+        (acc, el) => acc + el.position.left + el.position.top + el.value,
+        0
+      );
+      return updated !== old;
+    };
+    needAdd() && addBlocks({ playground: copyPlayground, count: 1, map });
 
     setPlayground(copyPlayground.filter((el) => el?.value));
   };
@@ -113,12 +125,13 @@ export const Playground = ({ size = 10 }: IPlaygroundProps) => {
 
   return (
     <>
-      <div className="playground-wrapper" onKeyDown={handle} tabIndex={0}>
+      <div className="playground-wrapper" onKeyUp={handle} tabIndex={0}>
         <div className="playground-container" style={playgroundStyle}>
           <>
             {blocked && <div>LOSE</div>}
             {mapRender}
             {playground.map((block, blockIndex) => {
+              if (!block?.value) return null;
               const positionStyle = {
                 top: `${diff * block.position.top}%`,
                 left: `${diff * block.position.left}%`,
