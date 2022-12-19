@@ -52,6 +52,7 @@ body,
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .playground-container {
@@ -83,4 +84,11 @@ body,
 .active-block {
   background-color: #c3fff4;
   transition: top 0.2s ease-out, left 0.2s ease-out;
+}
+
+.error {
+  position: absolute;
+  color: red;
+  top: 5%
+  /* left: 50%; */
 }

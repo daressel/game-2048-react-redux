@@ -96,12 +96,12 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
       );
       return updated === old;
     };
-    if (blocked()) {
+    if (blocked() && copyPlayground.length === size * size) {
       setBlocked(true);
       return;
     }
 
-    addBlocks({ playground: copyPlayground, count: 1, map });
+    !blocked() && addBlocks({ playground: copyPlayground, count: 1, map });
     setPlayground(copyPlayground.filter((el) => el?.value));
   };
 
@@ -130,9 +130,10 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
   return (
     <>
       <div className="playground-wrapper" onKeyUp={handle} tabIndex={0}>
+        {blocked && <span className="error">LOSE</span>}
+        {/* <span className="error">LOSE</span> */}
         <div className="playground-container" style={playgroundStyle}>
           <>
-            {blocked && <div>LOSE</div>}
             {mapRender}
             {playground.map((block, blockIndex) => {
               if (!block?.value) return null;
