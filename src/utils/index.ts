@@ -41,7 +41,6 @@ export const addBlocks = (data: {
 
     if (reservedIndexes[randomIndex]) continue;
     const values = [2, 4];
-    console.log(Math.round((Math.random() * 10) % 2));
     const newBlock: IBlock = {
       position: possiblePlaces[randomIndex],
       value: values[Math.round((Math.random() * 10) % 1)],

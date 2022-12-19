@@ -1,15 +1,16 @@
 import { useState, useMemo, KeyboardEvent } from 'react';
-import { IPlayground, IPlaygroundProps, Position, IBlock } from '../../types';
-import { initPlayground, initMap } from '../../utils';
+import { IPlayground, IPlaygroundProps, Position, IBlock, IAxisOpt } from '../../types';
+import { initPlayground, initMap, addBlocks } from '../../utils';
 
 export const Playground = ({ size = 4 }: IPlaygroundProps) => {
-  const map = useMemo(() => {
+  const [map, diff, playgroundStyle] = useMemo(() => {
     const map: Position[] = initMap(size, size);
-    return map;
-  }, [size]);
-
-  const diff = useMemo(() => {
-    return 100 / size;
+    const diff = 100 / size;
+    const playgroundStyle = {
+      height: `${size * 50 + size * 10}px`,
+      width: `${size * 50 + size * 10}px`,
+    };
+    return [map, diff, playgroundStyle];
   }, [size]);
 
   const mapRender = useMemo(() => {
@@ -27,26 +28,19 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
     });
   }, [size]);
 
-  const playgroundStyle = useMemo(() => {
-    return { height: `${size * 50 + size * 10}px`, width: `${size * 50 + size * 10}px` };
-  }, [size]);
-
   const [playground, setPlayground] = useState(initPlayground(map));
-  const [block, setBlock] = useState(false);
+
+  const condition = (index: number): boolean => {
+    return index < size && index >= 0;
+  };
 
   const move = async (direction: number, axis: 'row' | 'col') => {
-    const stepChange = direction ? -1 : 1;
     const copyPlayground = JSON.parse(JSON.stringify(playground)) as IPlayground;
-    const axisOpt = {
+
+    const stepChange = direction ? -1 : 1;
+    const axisOpt: IAxisOpt = {
       line: axis === 'row' ? 'top' : 'left',
       block: axis === 'row' ? 'left' : 'top',
-    } as {
-      line: 'top' | 'left';
-      block: 'top' | 'left';
-    };
-
-    const condition = (index: number): boolean => {
-      return index < size && index >= 0;
     };
 
     for (let line = 0; condition(line); line++) {
@@ -74,8 +68,27 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
         blockIndex += stepChange;
       }
     }
-
     setPlayground(copyPlayground);
+
+    await new Promise((res) => {
+      setTimeout(() => res(true), 200);
+    });
+
+    const result: IPlayground = [];
+
+    copyPlayground.forEach((copyEl) => {
+      const block = result.find(
+        (el) => el.position.left === copyEl.position.left && el.position.top === copyEl.position.top
+      );
+      if (block) {
+        block.value = block.value * 2;
+        return;
+      }
+      result.push(copyEl);
+    });
+    addBlocks({ playground: result, count: 1, map });
+
+    setPlayground(result);
   };
 
   const handle = async ({ key }: KeyboardEvent<HTMLDivElement>) => {
@@ -96,9 +109,8 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
       S: async () => move(1, 'col'),
       ArrowDown: async () => move(1, 'col'),
     };
-    setBlock(true);
-    await keyHandlers[key as keyof typeof keyHandlers]();
-    setBlock(false);
+
+    keyHandlers[key as keyof typeof keyHandlers]();
   };
 
   return (

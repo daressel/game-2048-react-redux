@@ -14,3 +14,8 @@ export interface IPlaygroundProps {
 }
 
 export type IPlayground = IBlock[];
+
+export interface IAxisOpt {
+  line: 'top' | 'left';
+  block: 'top' | 'left';
+}
