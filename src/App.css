@@ -57,6 +57,7 @@ body,
 .playground-container {
   display: flex;
   position: relative;
+  /* padding: 10px; */
   flex-direction: column;
   border-radius: 5px;
   background-color: #ffc4c4;
@@ -70,17 +71,17 @@ body,
 .active-block,
 .block-container {
   display: flex;
+  position: absolute;
   justify-content: center;
   align-items: center;
-  margin: 5px;
   border-radius: 5px;
   background-color: #ffefc3;
+  margin: 5px;
   height: 50px;
   width: 50px;
 }
 
 .active-block {
-  position: absolute;
   background-color: #c3fff4;
   transition: top 0.4s ease-out;
   transition: left 0.4s ease-out;

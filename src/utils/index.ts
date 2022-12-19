@@ -1,59 +1,60 @@
-import { IBlock, IPlayground } from './../types/index';
-export const getRandomBlocksOnStart = (max: number, size: number): number[][] => {
-  const result: number[][] = [];
-  for (let i = 0; i < size; i++) {
-    let randRow = Math.floor(Math.random() * max);
-    let randBlock = Math.floor(Math.random() * max);
+import { IBlock, IPlayground, Position } from './../types/index';
 
-    let invalidCondition = result.some((el) => el[0] === randRow && el[1] === randBlock);
+export const initMap = (height: number, width: number): Position[] => {
+  const map: Position[] = [];
 
-    while (invalidCondition) {
-      randRow = Math.floor(Math.random() * max);
-      randBlock = Math.floor(Math.random() * max);
-      invalidCondition = result.some((el) => el[0] === randRow && el[1] === randBlock);
+  for (let row = 0; row < height; row++) {
+    for (let col = 0; col < width; col++) {
+      const position: Position = {
+        left: col,
+        top: row,
+      };
+      map.push(position);
     }
-
-    result.push([randRow, randBlock]);
   }
-  return result;
+
+  return map;
 };
 
-export const getBlock = (top: string, left: string, value: number): IBlock => {
-  const block: IBlock = { value, position: { left, top } };
+export const addBlocks = (data: {
+  playground: IPlayground;
+  count: number;
+  map: Position[];
+}): void => {
+  const { playground, map, count: dataCount } = data;
 
-  return block;
-};
-
-export const getNewRandomBlock = (data: IPlayground, size: number): void => {
-  const diff = 100 / size;
-
-  let randomRow = Math.floor(Math.random() * size);
-  let randomCol = Math.floor(Math.random() * size);
-
-  while (
-    data.some((row, rowIndex) =>
-      row.some(
-        (block, blockIndex) => randomRow === rowIndex && randomCol === blockIndex && block.value
+  const possiblePlaces = map.filter(
+    (position) =>
+      !playground.some(
+        (block) => block.position.top === position.top && block.position.left === position.left
       )
-    )
-  ) {
-    randomRow = Math.floor(Math.random() * size);
-    randomCol = Math.floor(Math.random() * size);
-  }
+  );
 
-  data[randomRow][randomCol] = getBlock(`${randomRow * diff}%`, `${randomCol * diff}%`, 2);
+  const possibleLength = possiblePlaces.length;
+  const count = dataCount > possibleLength ? possibleLength : dataCount;
+
+  const reservedIndexes: number[] = [];
+  let randomIndex: number = Math.floor(Math.random() * possibleLength);
+
+  while (reservedIndexes.length < count) {
+    randomIndex = Math.floor(Math.random() * possibleLength);
+
+    if (reservedIndexes[randomIndex]) continue;
+
+    const newBlock: IBlock = {
+      position: possiblePlaces[randomIndex],
+      value: 2,
+    };
+
+    reservedIndexes.push(randomIndex);
+    playground.push(newBlock);
+  }
 };
 
-export const initPlayground = (size: number): IPlayground => {
-  const arr = Array.from(Array(size));
-  const randomBlocks = getRandomBlocksOnStart(size, Math.floor(30));
-  const diff = 100 / size;
-  arr.forEach((el, rowIndex) => {
-    arr[rowIndex] = Array.from(Array(size)).map((block, blockIndex) => {
-      const condition = randomBlocks.some((el) => el[0] === rowIndex && el[1] === blockIndex);
-      return getBlock(`${rowIndex * diff}%`, `${blockIndex * diff}%`, condition ? 2 : 0);
-    });
-  });
+export const initPlayground = (map: Position[]): IPlayground => {
+  const playground: IPlayground = [];
+  const count = Math.round(2);
+  addBlocks({ playground, count: 10, map });
 
-  return arr;
+  return playground;
 };
