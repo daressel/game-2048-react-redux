@@ -40,10 +40,11 @@ export const addBlocks = (data: {
     randomIndex = Math.floor(Math.random() * possibleLength);
 
     if (reservedIndexes[randomIndex]) continue;
-
+    const values = [2, 4];
+    console.log(Math.round((Math.random() * 10) % 2));
     const newBlock: IBlock = {
       position: possiblePlaces[randomIndex],
-      value: 2,
+      value: values[Math.round((Math.random() * 10) % 1)],
     };
 
     reservedIndexes.push(randomIndex);
@@ -54,7 +55,7 @@ export const addBlocks = (data: {
 export const initPlayground = (map: Position[]): IPlayground => {
   const playground: IPlayground = [];
   const count = Math.round(2);
-  addBlocks({ playground, count: 10, map });
+  addBlocks({ playground, count: 4, map });
 
   return playground;
 };

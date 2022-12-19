@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, KeyboardEvent } from 'react';
-import { IBlock, IPlayground, IPlaygroundProps, Position } from '../../types';
+import { useState, useMemo, KeyboardEvent } from 'react';
+import { IPlayground, IPlaygroundProps, Position, IBlock } from '../../types';
 import { initPlayground, initMap } from '../../utils';
 
-export const Playground = ({ size = 10 }: IPlaygroundProps) => {
+export const Playground = ({ size = 4 }: IPlaygroundProps) => {
   const map = useMemo(() => {
     const map: Position[] = initMap(size, size);
     return map;
@@ -32,33 +32,42 @@ export const Playground = ({ size = 10 }: IPlaygroundProps) => {
   }, [size]);
 
   const [playground, setPlayground] = useState(initPlayground(map));
+  const [block, setBlock] = useState(false);
 
-  const verticalMove = async (direction: number) => {};
-
-  const horizontalMove = async (direction: number) => {
+  const move = async (direction: number, axis: 'row' | 'col') => {
     const stepChange = direction ? -1 : 1;
     const copyPlayground = JSON.parse(JSON.stringify(playground)) as IPlayground;
+    const axisOpt = {
+      line: axis === 'row' ? 'top' : 'left',
+      block: axis === 'row' ? 'left' : 'top',
+    } as {
+      line: 'top' | 'left';
+      block: 'top' | 'left';
+    };
 
     const condition = (index: number): boolean => {
       return index < size && index >= 0;
     };
 
     for (let line = 0; condition(line); line++) {
-      const lineBlocks = copyPlayground.filter((block) => block.position.top === line);
+      const lineBlocks = copyPlayground.filter((block) => block.position[axisOpt.line] === line);
       if (!lineBlocks.length) continue;
 
       let blockIndex = direction ? size - 1 : 0;
       while (condition(blockIndex)) {
         let trackIndex = blockIndex;
-        let blockLength = 0;
-        while (condition(trackIndex) && blockLength < 2) {
+        let blocks: IBlock[] = [];
+        while (condition(trackIndex) && blocks.length < 2) {
           const block = lineBlocks.find(
-            (el) => el.position.left === trackIndex && el.position.top === line
+            (el) => el.position[axisOpt.block] === trackIndex && el.position[axisOpt.line] === line
           );
           if (block) {
-            block.position.left = blockIndex;
-            blockLength++;
+            if (!blocks.length || block.value === blocks[0].value) {
+              block.position[axisOpt.block] = blockIndex;
+            }
+            blocks.push(block);
           }
+
           trackIndex += stepChange;
         }
 
@@ -69,26 +78,27 @@ export const Playground = ({ size = 10 }: IPlaygroundProps) => {
     setPlayground(copyPlayground);
   };
 
-  const handle = ({ key }: KeyboardEvent<HTMLDivElement>) => {
+  const handle = async ({ key }: KeyboardEvent<HTMLDivElement>) => {
     const keyHandlers = {
-      d: () => horizontalMove(1),
-      D: () => horizontalMove(1),
-      ArrowRight: () => horizontalMove(1),
+      d: async () => move(1, 'row'),
+      D: async () => move(1, 'row'),
+      ArrowRight: async () => move(1, 'row'),
 
-      a: () => horizontalMove(0),
-      A: () => horizontalMove(0),
-      ArrowLeft: () => horizontalMove(0),
+      a: async () => move(0, 'row'),
+      A: async () => move(0, 'row'),
+      ArrowLeft: async () => move(0, 'row'),
 
-      w: () => verticalMove(1),
-      W: () => verticalMove(1),
-      ArrowUp: () => verticalMove(1),
+      w: async () => move(0, 'col'),
+      W: async () => move(0, 'col'),
+      ArrowUp: async () => move(0, 'col'),
 
-      s: () => verticalMove(0),
-      S: () => verticalMove(0),
-      ArrowDown: () => verticalMove(0),
+      s: async () => move(1, 'col'),
+      S: async () => move(1, 'col'),
+      ArrowDown: async () => move(1, 'col'),
     };
-
-    keyHandlers[key as keyof typeof keyHandlers]();
+    setBlock(true);
+    await keyHandlers[key as keyof typeof keyHandlers]();
+    setBlock(false);
   };
 
   return (
