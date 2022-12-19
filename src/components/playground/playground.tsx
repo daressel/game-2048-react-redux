@@ -2,13 +2,13 @@ import { useState, useMemo, KeyboardEvent } from 'react';
 import { IPlayground, IPlaygroundProps, Position, IBlock, IAxisOpt } from '../../types';
 import { initPlayground, initMap, addBlocks } from '../../utils';
 
-export const Playground = ({ size = 4 }: IPlaygroundProps) => {
+export const Playground = ({ size = 10 }: IPlaygroundProps) => {
   const [map, diff, playgroundStyle] = useMemo(() => {
     const map: Position[] = initMap(size, size);
     const diff = 100 / size;
     const playgroundStyle = {
-      height: `${size * 50 + size * 10}px`,
-      width: `${size * 50 + size * 10}px`,
+      height: `${size * 60}px`,
+      width: `${size * 60}px`,
     };
     return [map, diff, playgroundStyle];
   }, [size]);
@@ -29,6 +29,7 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
   }, [size]);
 
   const [playground, setPlayground] = useState(initPlayground(map));
+  const [blocked, setBlocked] = useState(false);
 
   const condition = (index: number): boolean => {
     return index < size && index >= 0;
@@ -74,24 +75,22 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
       setTimeout(() => res(true), 200);
     });
 
-    const result: IPlayground = [];
-
     copyPlayground.forEach((copyEl) => {
-      const block = result.find(
+      const [first, second] = copyPlayground.filter(
         (el) => el.position.left === copyEl.position.left && el.position.top === copyEl.position.top
       );
-      if (block) {
-        block.value = block.value * 2;
-        return;
+      if (first && second) {
+        first.value = first.value + second.value;
+        second.value = 0;
       }
-      result.push(copyEl);
     });
-    addBlocks({ playground: result, count: 1, map });
+    addBlocks({ playground: copyPlayground, count: 1, map });
 
-    setPlayground(result);
+    setPlayground(copyPlayground.filter((el) => el?.value));
   };
 
   const handle = async ({ key }: KeyboardEvent<HTMLDivElement>) => {
+    if (blocked) return;
     const keyHandlers = {
       d: async () => move(1, 'row'),
       D: async () => move(1, 'row'),
@@ -109,7 +108,6 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
       S: async () => move(1, 'col'),
       ArrowDown: async () => move(1, 'col'),
     };
-
     keyHandlers[key as keyof typeof keyHandlers]();
   };
 
@@ -118,6 +116,7 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
       <div className="playground-wrapper" onKeyDown={handle} tabIndex={0}>
         <div className="playground-container" style={playgroundStyle}>
           <>
+            {blocked && <div>LOSE</div>}
             {mapRender}
             {playground.map((block, blockIndex) => {
               const positionStyle = {
