@@ -53,8 +53,7 @@ export const addBlocks = (data: {
 
 export const initPlayground = (map: Position[]): IPlayground => {
   const playground: IPlayground = [];
-  const count = Math.round(2);
-  addBlocks({ playground, count: 4, map });
+  addBlocks({ playground, count: 2, map });
 
   return playground;
 };
