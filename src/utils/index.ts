@@ -44,6 +44,7 @@ export const addBlocks = (data: {
     const newBlock: IBlock = {
       position: possiblePlaces[randomIndex],
       value: values[Math.round((Math.random() * 10) % 1)],
+      withAnimation: false,
     };
 
     reservedIndexes.push(randomIndex);

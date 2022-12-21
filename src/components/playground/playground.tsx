@@ -69,7 +69,7 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
         blockIndex += stepChange;
       }
     }
-    setPlayground(copyPlayground);
+    setPlayground(copyPlayground.map((block) => ({ ...block, withAnimation: true })));
 
     await new Promise((res) => {
       setTimeout(() => res(true), 200);
@@ -102,7 +102,9 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
     }
 
     !blocked() && addBlocks({ playground: copyPlayground, count: 1, map });
-    setPlayground(copyPlayground.filter((el) => el?.value));
+    setPlayground(
+      copyPlayground.filter((el) => el?.value).map((block) => ({ ...block, withAnimation: false }))
+    );
   };
 
   const handle = async ({ key }: KeyboardEvent<HTMLDivElement>) => {
@@ -131,7 +133,6 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
     <>
       <div className="playground-wrapper" onKeyUp={handle} tabIndex={0}>
         {blocked && <span className="error">LOSE</span>}
-        {/* <span className="error">LOSE</span> */}
         <div className="playground-container" style={playgroundStyle}>
           <>
             {mapRender}
@@ -140,6 +141,9 @@ export const Playground = ({ size = 4 }: IPlaygroundProps) => {
               const positionStyle = {
                 top: `${diff * block.position.top}%`,
                 left: `${diff * block.position.left}%`,
+                ...(block.withAnimation
+                  ? { transition: 'top 0.2s ease-out, left 0.2s ease-out' }
+                  : {}),
               };
               return (
                 <div

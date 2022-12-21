@@ -2,6 +2,7 @@ export interface IBlock {
   value: number;
   color?: string;
   position: Position;
+  withAnimation: boolean;
 }
 
 export interface Position {
